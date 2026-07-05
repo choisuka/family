@@ -1,0 +1,18 @@
+{
+  "name": "armoonia_mcp",
+  "version": "1.0.0",
+  "description": "AGENTIC PLAYER 10 - 가족 행복 MCP 서버 (여행지 추천, 부부 소통 도우미, 가족 미션)",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^5.2.1"
+  }
+}
