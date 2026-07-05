@@ -30,11 +30,18 @@ function createServer() {
     'recommend_travel',
     {
       title: '여행지 추천',
-      description: '입력한 지역(도시/구/군) 기준으로 아이와 함께 가기 좋은 국내 여행지를 가까운 순으로 추천합니다. 연령대를 지정하면 해당 연령에 맞는 곳만 추천합니다.',
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 여행지 추천 도구입니다. 입력한 지역(도시/구/군) 기준으로 아이와 함께 가기 좋은 국내 여행지를 가까운 순으로 추천합니다. 연령대를 지정하면 해당 연령에 맞는 곳만 추천합니다.',
       inputSchema: {
         region: z.string().describe('기준이 되는 지역명 (예: 서울, 춘천, 부산 강서구)'),
         ageGroup: z.enum(['0~2세', '3~5세', '6~8세', '9세 이상']).optional().describe('아이 연령대 (선택)'),
         count: z.number().int().min(1).max(10).optional().describe('추천 개수 (기본 3개)')
+      },
+      annotations: {
+        title: '여행지 추천',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: true
       }
     },
     async ({ region, ageGroup, count }) => {
@@ -68,8 +75,15 @@ function createServer() {
     'couple_communication',
     {
       title: '부부 소통 도우미',
-      description: '오늘의 감사 미션과 부부 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 내용이 유지됩니다.',
-      inputSchema: {}
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 부부 소통 도우미 도구입니다. 오늘의 감사 미션과 부부 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 내용이 유지됩니다.',
+      inputSchema: {},
+      annotations: {
+        title: '부부 소통 도우미',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
     },
     async () => {
       const seed = todaySeed();
@@ -88,8 +102,15 @@ function createServer() {
     'family_mission',
     {
       title: '가족 미션 추천',
-      description: '오늘 온 가족이 함께 해볼 만한 미션을 하나 추천합니다.',
-      inputSchema: {}
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 가족 미션 추천 도구입니다. 오늘 온 가족이 함께 해볼 만한 미션을 하나 추천합니다.',
+      inputSchema: {},
+      annotations: {
+        title: '가족 미션 추천',
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false
+      }
     },
     async () => {
       const seed = todaySeed();
