@@ -5,8 +5,8 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { z } from 'zod';
 import {
   TRAVEL_PLACES,
-  GRATITUDE_MISSIONS,
-  CONVERSATION_TOPICS,
+  MOOD_MISSIONS,
+  MOOD_TOPICS,
   FAMILY_MISSIONS,
   haversine,
   seededPick,
@@ -75,8 +75,10 @@ function createServer() {
     'couple_communication',
     {
       title: '부부 소통 도우미',
-      description: 'Happy Family Operation(행복한 가정만들기 작전)의 부부 소통 도우미 도구입니다. 오늘의 감사 미션과 부부 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 내용이 유지됩니다.',
-      inputSchema: {},
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 부부 소통 도우미 도구입니다. 오늘 부부 사이의 상황(보통/다퉜어요/육아에 지쳤어요/기념일)을 알려주면 그에 맞는 감사 미션과 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 상황이면 같은 내용이 유지됩니다.',
+      inputSchema: {
+        mood: z.enum(['보통', '다퉜어요', '육아에 지쳤어요', '기념일·기쁜날']).optional().describe('오늘 부부 사이 상황 (선택, 기본값 보통)')
+      },
       annotations: {
         title: '부부 소통 도우미',
         readOnlyHint: true,
@@ -85,12 +87,13 @@ function createServer() {
         openWorldHint: false
       }
     },
-    async () => {
-      const seed = todaySeed();
-      const mission = seededPick(GRATITUDE_MISSIONS, seed);
-      const topic = seededPick(CONVERSATION_TOPICS, seed + 1);
+    async ({ mood }) => {
+      const key = mood && MOOD_MISSIONS[mood] ? mood : '보통';
+      const seed = todaySeed() + key.length;
+      const mission = seededPick(MOOD_MISSIONS[key], seed);
+      const topic = seededPick(MOOD_TOPICS[key], seed + 1);
       const text = [
-        '💬 오늘의 부부 소통 추천',
+        `💬 오늘의 부부 소통 추천 (${key})`,
         `🙏 감사 미션: ${mission}`,
         `🗣️ 대화 주제: ${topic}`
       ].join('\n');
@@ -102,8 +105,10 @@ function createServer() {
     'family_mission',
     {
       title: '가족 미션 추천',
-      description: 'Happy Family Operation(행복한 가정만들기 작전)의 가족 미션 추천 도구입니다. 오늘 온 가족이 함께 해볼 만한 미션을 하나 추천합니다.',
-      inputSchema: {},
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 가족 미션 추천 도구입니다. 자녀 연령대(유아/초등)를 알려주면 그에 맞는, 오늘 온 가족이 함께 해볼 만한 미션을 하나 추천합니다.',
+      inputSchema: {
+        ageGroup: z.enum(['유아', '초등']).optional().describe('자녀 연령대 (선택, 미지정 시 전체 미션 중 추천)')
+      },
       annotations: {
         title: '가족 미션 추천',
         readOnlyHint: true,
@@ -112,9 +117,12 @@ function createServer() {
         openWorldHint: false
       }
     },
-    async () => {
-      const seed = todaySeed();
-      const mission = seededPick(FAMILY_MISSIONS, seed + 2);
+    async ({ ageGroup }) => {
+      const pool = ageGroup
+        ? FAMILY_MISSIONS.filter(m => m.age === ageGroup || m.age === '공통')
+        : FAMILY_MISSIONS;
+      const seed = todaySeed() + (ageGroup ? ageGroup.length : 0);
+      const mission = seededPick(pool, seed + 2);
       const text = `🎯 오늘의 가족 미션: ${mission.title}\n(${mission.tag})`;
       return { content: [{ type: 'text', text }] };
     }
