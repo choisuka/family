@@ -5,6 +5,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { z } from 'zod';
 import {
   TRAVEL_PLACES,
+  KOREA_REGIONS,
   MOOD_MISSIONS,
   MOOD_TOPICS,
   FAMILY_MISSIONS,
@@ -14,8 +15,19 @@ import {
 } from './data.js';
 
 const NOMINATIM_UA = 'ArmooniaFamilyMCP/1.0 (contact: sukachoi@gmail.com)';
+const REGION_KEYS = Object.keys(KOREA_REGIONS).sort((a, b) => b.length - a.length);
+
+function lookupLocalRegion(query) {
+  for (const key of REGION_KEYS) {
+    if (query.includes(key)) return KOREA_REGIONS[key];
+  }
+  return null;
+}
 
 async function geocode(query) {
+  const local = lookupLocalRegion(query);
+  if (local) return local;
+
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=kr`;
   const res = await fetch(url, { headers: { 'User-Agent': NOMINATIM_UA } });
   const data = await res.json();
@@ -67,7 +79,8 @@ function createServer() {
         return `${i + 1}. ${p.icon} ${p.title}${distText} — ${p.loc}\n   ${p.desc}\n   💡 ${p.tip}`;
       });
 
-      return { content: [{ type: 'text', text: [header, ...lines].join('\n\n') }] };
+      const footer = '💡 다녀온 뒤엔 오늘의 가족 미션이나 부부 소통 추천도 함께 받아보세요.';
+      return { content: [{ type: 'text', text: [header, ...lines, footer].join('\n\n') }] };
     }
   );
 
@@ -95,7 +108,9 @@ function createServer() {
       const text = [
         `💬 오늘의 부부 소통 추천 (${key})`,
         `🙏 감사 미션: ${mission}`,
-        `🗣️ 대화 주제: ${topic}`
+        `🗣️ 대화 주제: ${topic}`,
+        '',
+        '💡 오늘 아이와 함께할 가족 미션도 궁금하다면 편하게 물어보세요.'
       ].join('\n');
       return { content: [{ type: 'text', text }] };
     }
@@ -123,7 +138,7 @@ function createServer() {
         : FAMILY_MISSIONS;
       const seed = todaySeed() + (ageGroup ? ageGroup.length : 0);
       const mission = seededPick(pool, seed + 2);
-      const text = `🎯 오늘의 가족 미션: ${mission.title}\n(${mission.tag})`;
+      const text = `🎯 오늘의 가족 미션: ${mission.title}\n(${mission.tag})\n\n💡 오늘 부부 소통 추천이나 근처 여행지 추천도 함께 받아보시겠어요?`;
       return { content: [{ type: 'text', text }] };
     }
   );
