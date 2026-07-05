@@ -127,6 +127,32 @@ app.post('/mcp', async (req, res) => {
   }
 });
 
+async function handleNoBody(req, res) {
+  try {
+    const server = createServer();
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+    res.on('close', () => {
+      transport.close();
+      server.close();
+    });
+    await server.connect(transport);
+    await transport.handleRequest(req, res);
+  } catch (err) {
+    console.error('MCP request error:', err);
+    if (!res.headersSent) {
+      res.status(500).json({
+        jsonrpc: '2.0',
+        error: { code: -32603, message: 'Internal server error' },
+        id: null
+      });
+    }
+  }
+}
+
+// MCP Streamable HTTP 표준: GET(서버→클라이언트 알림 스트림), DELETE(세션 종료)도 지원해야 함
+app.get('/mcp', handleNoBody);
+app.delete('/mcp', handleNoBody);
+
 app.get('/health', (req, res) => res.json({ ok: true, name: 'armoonia-family-mcp' }));
 
 const PORT = process.env.PORT || 3000;
