@@ -87,13 +87,13 @@ function createServer() {
   server.registerTool(
     'couple_communication',
     {
-      title: '부부 소통 내비게이션',
-      description: 'Happy Family Operation(행복한 가정만들기 작전)의 부부 소통 내비게이션 도구입니다. 오늘 부부 사이의 상황(보통/다퉜어요/육아에 지쳤어요/기념일)을 알려주면 그에 맞는 감사 미션과 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 상황이면 같은 내용이 유지됩니다.',
+      title: '부부 소통 나침반',
+      description: 'Happy Family Operation(행복한 가정만들기 작전)의 부부 소통 나침반 도구입니다. 오늘 부부 사이의 상황(보통/다퉜어요/육아에 지쳤어요/기념일)을 알려주면 그에 맞는 감사 미션과 대화 주제를 하나씩 추천합니다. 하루 동안은 같은 상황이면 같은 내용이 유지됩니다.',
       inputSchema: {
         mood: z.enum(['보통', '다퉜어요', '육아에 지쳤어요', '기념일·기쁜날']).optional().describe('오늘 부부 사이 상황 (선택, 기본값 보통)')
       },
       annotations: {
-        title: '부부 소통 내비게이션',
+        title: '부부 소통 나침반',
         readOnlyHint: true,
         destructiveHint: false,
         idempotentHint: true,
