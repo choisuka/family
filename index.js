@@ -29,10 +29,23 @@ async function geocode(query) {
   if (local) return local;
 
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=kr`;
-  const res = await fetch(url, { headers: { 'User-Agent': NOMINATIM_UA } });
-  const data = await res.json();
-  if (!data.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 3000);
+    const res = await fetch(url, {
+      headers: { 'User-Agent': NOMINATIM_UA },
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const lat = parseFloat(data[0]?.lat);
+    const lng = parseFloat(data[0]?.lon);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
+    return { lat, lng };
+  } catch {
+    return null;
+  }
 }
 
 function createServer() {

@@ -134,7 +134,12 @@ export function seededPick(arr, seed){
   return arr[idx];
 }
 
+// 서버가 어떤 시간대(UTC 등)에서 돌아가든 항상 한국시간(KST, UTC+9) 기준 날짜로 계산
+function nowKST(){
+  return new Date(Date.now() + 9*60*60*1000);
+}
+
 export function todaySeed(){
-  const d = new Date();
-  return d.getFullYear()*10000 + (d.getMonth()+1)*100 + d.getDate();
+  const d = nowKST();
+  return d.getUTCFullYear()*10000 + (d.getUTCMonth()+1)*100 + d.getUTCDate();
 }
