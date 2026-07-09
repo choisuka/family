@@ -14,7 +14,6 @@ import {
   todaySeed
 } from './data.js';
 
-const NOMINATIM_UA = 'ArmooniaFamilyMCP/1.0 (contact: sukachoi@gmail.com)';
 const REGION_KEYS = Object.keys(KOREA_REGIONS).sort((a, b) => b.length - a.length);
 
 function lookupLocalRegion(query) {
@@ -24,28 +23,9 @@ function lookupLocalRegion(query) {
   return null;
 }
 
+// 외부 지오코딩 API 없이 로컬 좌표 목록으로만 처리 (응답속도 SLA: 평균 100ms 이내 요구사항 준수)
 async function geocode(query) {
-  const local = lookupLocalRegion(query);
-  if (local) return local;
-
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=kr`;
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 3000);
-    const res = await fetch(url, {
-      headers: { 'User-Agent': NOMINATIM_UA },
-      signal: controller.signal
-    });
-    clearTimeout(timer);
-    if (!res.ok) return null;
-    const data = await res.json();
-    const lat = parseFloat(data[0]?.lat);
-    const lng = parseFloat(data[0]?.lon);
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-    return { lat, lng };
-  } catch {
-    return null;
-  }
+  return lookupLocalRegion(query);
 }
 
 function createServer() {
